@@ -40,8 +40,11 @@ server.post('/api/users', (req, res) => { // localhost:5000/api/users
   }else{
   // if there is no error, add user to db and return id of user
     db.insert(user)
-    .then(user => {
-      res.status(201).json(user);
+    .then(userId => {
+      db.findById(userId.id)
+        .then(userObj => {
+          res.status(201).json(userObj)
+        })
     })
     // if there is an error, return error 500
     .catch(err => {
@@ -71,7 +74,7 @@ server.get('/api/users/:id', (req, res) => { // localhost:5000/api/users/id
   db.findById(id)
     .then(user => {
       // if no user with the id exists, return error 404
-      if(user === undefined){
+      if(!user){
         res.status(404).json({ error: "The user with the specified ID does not exist." })
       }else{
       // user does exist, return user
@@ -105,7 +108,7 @@ server.delete('/api/users/:id', (req, res) => { // localhost:5000/api/users/id
     })
 })
 
-// POST: updates specified user data in the db
+// PUT: updates specified user data in the db
 server.put('/api/users/:id', (req, res) => { // localhost:5000/api/users/id
   // setting id to the request's id that is given through parameters
   const id = req.params.id;
@@ -122,7 +125,10 @@ server.put('/api/users/:id', (req, res) => { // localhost:5000/api/users/id
           res.status(404).json({ error: "The user with the specified ID does not exist." })
         }else{
           // get modified user
-          res.status(200).json(userInfo)
+          db.findById(id)
+            .then(userObj => {
+              res.status(200).json(userObj)
+            })
         }
       })
       .catch(err => {
